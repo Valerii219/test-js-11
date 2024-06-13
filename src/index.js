@@ -1,35 +1,40 @@
-import axios from 'axios';
 import Notiflix from 'notiflix';
+import NewsApi from './newsApi';
 
 const searchForm = document.querySelector('.search-form');
-const container = document.querySelector('.gallery')
+const container = document.querySelector('.gallery');
+const btn = document.querySelector('.btn');
 
-const BASE_URL = 'https://pixabay.com/api';
-const KEY = '36861352-2474982a97ff1b570eda1c4c2';
-let page = 1;
+const newApi = new NewsApi();
+
 
 searchForm.addEventListener('submit', handleSubmit);
 
 async function handleSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  const inputValue = form.elements.searchQuery.value;
 
-  if (inputValue === '') {
+  newApi.query = form.elements.searchQuery.value;
+
+  if (newApi.query === '') {
     return Notiflix.Notify.warning('Please fill the field!');
   }
+    newApi.fetch()
+  container.innerHTML = markup(resp.data.hits);
+     
+}
+
+btn.addEventListener('click',()=>{
+
   try {
-    const resp = await axios(
+    const resp =  axios(
         `${BASE_URL}/?key=${KEY}&q=${inputValue}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`
       ) ;
       container.innerHTML = markup(resp.data.hits);
   } catch (error) {
     console.log(error);
   }
-    
-     
-     
-}
+} )
 
 function markup(arr) {
   return arr.map(
