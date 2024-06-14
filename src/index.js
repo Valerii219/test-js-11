@@ -7,56 +7,61 @@ const btn = document.querySelector('.btn');
 
 const newApi = new NewsApi();
 
-
 searchForm.addEventListener('submit', handleSubmit);
+btn.addEventListener('click', loadBtn);
 
 async function handleSubmit(e) {
   e.preventDefault();
   const form = e.target;
-
   newApi.query = form.elements.searchQuery.value;
+  newApi.resetPage();
+  container.innerHTML = '';
 
   if (newApi.query === '') {
     return Notiflix.Notify.warning('Please fill the field!');
   }
-    newApi.fetch()
-  container.innerHTML = markup(resp.data.hits);
-     
+  try {
+    const resp = await newApi.fetch();
+    container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+  } catch (error) {}
 }
 
-btn.addEventListener('click',()=>{
-
+async function loadBtn() {
   try {
-    const resp =  axios(
-        `${BASE_URL}/?key=${KEY}&q=${inputValue}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`
-      ) ;
-      container.innerHTML = markup(resp.data.hits);
-  } catch (error) {
-    console.log(error);
-  }
-} )
+    const resp = await newApi.fetch();
+    container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+  } catch (error) {}
+}
 
 function markup(arr) {
-  return arr.map(
-      ({webformatURL, largeImageURL, tags, likes, views, comments, downloads}) =>
+  return arr
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) =>
         `<div class="photo-card">
-  <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-  <div class="info">
-    <p class="info-item">
-      <b>Likes:${likes}</b>
-    </p>
-    <p class="info-item">
-      <b>Views:${views}</b>
-    </p>
-    <p class="info-item">
-      <b>Comments:${comments}</b>
-    </p>
-    <p class="info-item">
-      <b>Downloads:${downloads}</b>
-    </p>
-  </div>
-</div>`
+    <img src="${webformatURL}" alt="${tags}" loading="lazy" width='250'/>
+    <div class="info">
+      <p class="info-item">
+        <b class = "bb">Likes:<span class = span-opt>${likes}<span/></b>
+      </p>
+      <p class="info-item">
+        <b class = "bb">Views:<span class = span-opt>${views}<span/></b>
+      </p>
+      <p class="info-item">
+        <b class = "bb">Comments:<span class = span-opt>${comments}<span/></b>
+      </p>
+      <p class="info-item">
+        <b class = "bb">Downloads:<span class = span-opt>${downloads}<span/></b>
+      </p>
+    </div>
+  </div>`
     )
     .join('');
 }
-
