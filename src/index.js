@@ -1,14 +1,25 @@
 import Notiflix from 'notiflix';
 import NewsApi from './newsApi';
+import {markup} from './functions'
+import SimpleLightbox from 'simplelightbox';
+// Додатковий імпорт стилів
+import "simplelightbox/dist/simple-lightbox.min.css";
+import simpleLightbox from 'simplelightbox';
 
 const searchForm = document.querySelector('.search-form');
 const container = document.querySelector('.gallery');
 const btn = document.querySelector('.btn');
 
+
+
+
 const newApi = new NewsApi();
 
 searchForm.addEventListener('submit', handleSubmit);
 btn.addEventListener('click', loadBtn);
+
+let gallery = new SimpleLightbox('.gallery a');
+
 
 async function handleSubmit(e) {
   e.preventDefault();
@@ -19,10 +30,25 @@ async function handleSubmit(e) {
 
   if (newApi.query === '') {
     return Notiflix.Notify.warning('Please fill the field!');
-  }
+  }  
   try {
     const resp = await newApi.fetch();
     container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+    gallery.refresh();
+    const totalHits = resp.data.totalHits;
+   
+    if(totalHits > 0){
+      Notiflix.Notify.success(`"Hooray! We found ${totalHits} images."`);
+    }
+    const { height: cardHeight } = document
+    .querySelector(".gallery")
+    .firstElementChild.getBoundingClientRect();
+ 
+  
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: "smooth",
+  });
   } catch (error) {}
 }
 
@@ -30,38 +56,6 @@ async function loadBtn() {
   try {
     const resp = await newApi.fetch();
     container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+    gallery.refresh();
   } catch (error) {}
-}
-
-function markup(arr) {
-  return arr
-    .map(
-      ({
-        webformatURL,
-        largeImageURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) =>
-        `<div class="photo-card">
-    <img src="${webformatURL}" alt="${tags}" loading="lazy" width='250'/>
-    <div class="info">
-      <p class="info-item">
-        <b class = "bb">Likes:<span class = span-opt>${likes}<span/></b>
-      </p>
-      <p class="info-item">
-        <b class = "bb">Views:<span class = span-opt>${views}<span/></b>
-      </p>
-      <p class="info-item">
-        <b class = "bb">Comments:<span class = span-opt>${comments}<span/></b>
-      </p>
-      <p class="info-item">
-        <b class = "bb">Downloads:<span class = span-opt>${downloads}<span/></b>
-      </p>
-    </div>
-  </div>`
-    )
-    .join('');
 }
