@@ -9,14 +9,26 @@ import simpleLightbox from 'simplelightbox';
 const searchForm = document.querySelector('.search-form');
 const container = document.querySelector('.gallery');
 const btn = document.querySelector('.btn');
+const target = document.querySelector('.js-guard');
 
 
+let options = {
+  root: null,
+  rootMargin: "200px",
+  threshold: 1.0,
+};
+
+let observer = new IntersectionObserver(callback, options);
+function callback(e){
+  console.log(e);
+
+}
 
 
 const newApi = new NewsApi();
 
 searchForm.addEventListener('submit', handleSubmit);
-btn.addEventListener('click', loadBtn);
+// btn.addEventListener('click', loadBtn);
 
 let gallery = new SimpleLightbox('.gallery a');
 
@@ -33,9 +45,12 @@ async function handleSubmit(e) {
   }  
   try {
     const resp = await newApi.fetch();
+    
     container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+    observer.observe(target);
     gallery.refresh();
     const totalHits = resp.data.totalHits;
+  
    
     if(totalHits > 0){
       Notiflix.Notify.success(`"Hooray! We found ${totalHits} images."`);
