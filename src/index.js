@@ -1,37 +1,47 @@
 import Notiflix from 'notiflix';
 import NewsApi from './newsApi';
-import {markup} from './functions'
+import { markup } from './functions';
 import SimpleLightbox from 'simplelightbox';
-// Додатковий імпорт стилів
-import "simplelightbox/dist/simple-lightbox.min.css";
+import 'simplelightbox/dist/simple-lightbox.min.css';
 import simpleLightbox from 'simplelightbox';
 
 const searchForm = document.querySelector('.search-form');
 const container = document.querySelector('.gallery');
-const btn = document.querySelector('.btn');
 const target = document.querySelector('.js-guard');
-
-
-let options = {
-  root: null,
-  rootMargin: "200px",
-  threshold: 1.0,
-};
-
-let observer = new IntersectionObserver(callback, options);
-function callback(e){
-  console.log(e);
-
-}
-
 
 const newApi = new NewsApi();
 
 searchForm.addEventListener('submit', handleSubmit);
-// btn.addEventListener('click', loadBtn);
-
 let gallery = new SimpleLightbox('.gallery a');
 
+async function startFetch() {
+  const resp = await newApi.fetch();
+  container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+  console.log(resp);
+  const totalHits = resp.data.totalHits;
+  if (totalHits > 0) {
+    Notiflix.Notify.success(`"Hooray! We found ${totalHits} images."`);
+  }
+  gallery.refresh();
+
+}
+
+let options = {
+  root: null,
+  rootMargin: '300px',
+  threshold: 1.0,
+};
+let observer = new IntersectionObserver(onLoad, options);
+
+function onLoad(entries, observer) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const resp = newApi.fetch();
+      container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+    }
+    
+  });
+}
 
 async function handleSubmit(e) {
   e.preventDefault();
@@ -42,35 +52,27 @@ async function handleSubmit(e) {
 
   if (newApi.query === '') {
     return Notiflix.Notify.warning('Please fill the field!');
-  }  
+  }
   try {
-    const resp = await newApi.fetch();
-    
-    container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+   startFetch();
     observer.observe(target);
-    gallery.refresh();
-    const totalHits = resp.data.totalHits;
-  
+    // if (newApi.page * 40 >= totalHits) {
+    //   observer.unobserve(target);
+    // }
+    // if(resp.data.hits === resp.data.totalHits){
+    //   observer.unobserve(target)
+    // }
    
-    if(totalHits > 0){
-      Notiflix.Notify.success(`"Hooray! We found ${totalHits} images."`);
-    }
+    
     const { height: cardHeight } = document
-    .querySelector(".gallery")
-    .firstElementChild.getBoundingClientRect();
- 
-  
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: "smooth",
-  });
+      .querySelector('.gallery')
+      .firstElementChild.getBoundingClientRect();
+
+    window.scrollBy({
+      top: cardHeight * 2,
+      behavior: 'smooth',
+    });
   } catch (error) {}
 }
 
-async function loadBtn() {
-  try {
-    const resp = await newApi.fetch();
-    container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
-    gallery.refresh();
-  } catch (error) {}
-}
+
