@@ -14,16 +14,22 @@ const newApi = new NewsApi();
 searchForm.addEventListener('submit', handleSubmit);
 let gallery = new SimpleLightbox('.gallery a');
 
-async function startFetch() {
-  const resp = await newApi.fetch();
-  container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
-  console.log(resp);
-  const totalHits = resp.data.totalHits;
-  if (totalHits > 0) {
-    Notiflix.Notify.success(`"Hooray! We found ${totalHits} images."`);
-  }
-  gallery.refresh();
-
+function startFetch() {
+  const resp = newApi.fetch();
+  resp
+    .then(data => {
+      console.log();
+      container.insertAdjacentHTML('beforeend', markup(data.data.hits));
+      observer.observe(target);
+      const totalHits = data.data.totalHits;
+      if (totalHits > 0) {
+        Notiflix.Notify.success(`"Hooray! We found ${totalHits} images."`);
+      }
+      gallery.refresh();
+    })
+    .catch(er => {
+      Notiflix.Notify.failure('Error fetching data');
+    });
 }
 
 let options = {
@@ -37,33 +43,28 @@ function onLoad(entries, observer) {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       const resp = newApi.fetch();
-      container.insertAdjacentHTML('beforeend', markup(resp.data.hits));
+      resp.then(data => {
+        container.insertAdjacentHTML('beforeend', markup(data.data.hits));
+        if (data.data.total === data.data.totalHits) {
+          observer.unobserve(target);
+        }
+      });
     }
-    
   });
 }
 
-async function handleSubmit(e) {
+function handleSubmit(e) {
   e.preventDefault();
   const form = e.target;
   newApi.query = form.elements.searchQuery.value;
   newApi.resetPage();
   container.innerHTML = '';
 
-  if (newApi.query === '') {
-    return Notiflix.Notify.warning('Please fill the field!');
+  if (newApi.query.trim().length === 0) {
+    return Notiflix.Notify.info('You need to enter certain data');
   }
   try {
-   startFetch();
-    observer.observe(target);
-    // if (newApi.page * 40 >= totalHits) {
-    //   observer.unobserve(target);
-    // }
-    // if(resp.data.hits === resp.data.totalHits){
-    //   observer.unobserve(target)
-    // }
-   
-    
+    startFetch();
     const { height: cardHeight } = document
       .querySelector('.gallery')
       .firstElementChild.getBoundingClientRect();
@@ -74,5 +75,3 @@ async function handleSubmit(e) {
     });
   } catch (error) {}
 }
-
-

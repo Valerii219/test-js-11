@@ -9,16 +9,12 @@ export default class NewsApi {
     this._query = '';
     this._page = 1;
   }
-  async fetch() {
-    try {
-      const resp = await axios.get(
-        `${BASE_URL}/?key=${KEY}&q=${this._query}&image_type=photo&orientation=horizontal&safesearch=true&page=${this._page}&per_page=40`
-      );
-      this.incrementPage();
-      return resp;
-    } catch (error) {
-      Notiflix.Notify.failure('Error fetching data');
-    }
+  fetch() {
+    const resp = axios.get(
+      `${BASE_URL}/?key=${KEY}&q=${this._query}&image_type=photo&orientation=horizontal&safesearch=true&page=${this._page}&per_page=40`
+    );
+    this.incrementPage();
+    return resp;
   }
 
   get query() {

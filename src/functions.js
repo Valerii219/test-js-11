@@ -11,7 +11,7 @@ export function markup(arr) {
           downloads,
         }) =>
           `<div class="photo-card">
-      <a href="${largeImageURL}"><img src="${webformatURL}" alt="${tags}" loading="lazy" width='250'/></a>
+      <a href="${largeImageURL}"><img class="img-card"src="${webformatURL}" alt="${tags}" loading="lazy" /></a>
       <div class="info">
         <p class="info-item">
           <b class = "bb">Likes:<span class = span-opt>${likes}<span/></b>
